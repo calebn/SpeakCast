@@ -70,4 +70,4 @@ This command will print the speaker diarization results for the supplied Episode
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](https://opensource.org/license/mit/)
