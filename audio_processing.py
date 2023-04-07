@@ -106,6 +106,22 @@ def transcribe_audio(conn, episode_id, input_file, recognizer):
     # print(f'transcription:', transcription)
     return transcription
 
+def transcribe_wav_file(wav_path, recognizer, punctuator):
+    """
+    Transcribe a single .wav file without speaker diarization and print the result.
+
+    :param wav_path: str, path to the .wav file to be transcribed.
+    :param recognizer: KaldiRecognizer, an instance of the Vosk KaldiRecognizer class.
+    :param punctuator: Punctuator, an instance of the Punctuator class for punctuating the transcribed text.
+    """
+    with open(wav_path, 'rb') as f:
+        recognizer.AcceptWaveform(f.read())
+    results = recognizer.Result()
+    results_dict = json.loads(results)
+    text = results_dict['text']
+    punctuated_text = punctuator.punctuate(text)
+    print(punctuated_text)
+
 def format_transcript(punctuator, raw_transcript):
     """
     Formats a raw transcript by adding punctuation using the Punctuator model.

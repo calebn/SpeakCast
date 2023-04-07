@@ -10,9 +10,19 @@ from vosk import Model, KaldiRecognizer
 from config import VOSK_MODEL_PATH, FRAME_RATE, PUNCTUATOR_MODEL_PATH
 from database import create_database
 from output import print_google_doc_urls, print_diarization_as_rttm, print_transcription_as_json, print_episode_transcript
-from audio_processing import process_episode
+from audio_processing import process_episode, transcribe_wav_file
 
 def main(args):
+    model = Model(VOSK_MODEL_PATH)
+    recognizer = KaldiRecognizer(model, FRAME_RATE)
+    recognizer.SetWords(True)
+
+    punctuator = Punctuator(PUNCTUATOR_MODEL_PATH)
+
+    if args.wav_transcribe:
+        transcribe_wav_file(args.wav_transcribe, recognizer, punctuator)
+        return
+
     if args.podcast_dir:
         podcast_dir = args.podcast_dir
         conn = create_database(os.path.join(podcast_dir, "transcripts.db"))
@@ -56,12 +66,6 @@ def main(args):
     conn = create_database(os.path.join(podcast_dir, "transcripts.db"))
     items = soup.find_all('item')
 
-    model = Model(VOSK_MODEL_PATH)
-    recognizer = KaldiRecognizer(model, FRAME_RATE)
-    recognizer.SetWords(True)
-
-    punctuator = Punctuator(PUNCTUATOR_MODEL_PATH)
-
     found = False
 
     for item in items:
@@ -90,13 +94,14 @@ if __name__ == '__main__':
     parser.add_argument('--print_transcript', action='store_true', help='Print episode transcript')
     parser.add_argument('-d', '--podcast_dir', help='Podcast directory to locate the correct transcripts.db file')
     parser.add_argument('-e', '--episode_title', help='Specify the episode title for exporting, printing or processing')
+    parser.add_argument('-w', '--wav-transcribe', help='Specify a single wav file to transcribe only')
     args = parser.parse_args()
 
     if args.num_speakers is not None and (args.min_speakers is not None or args.max_speakers is not None):
         print("Error: You cannot specify both num_speakers and min_speakers/max_speakers. Please choose one approach.")
         sys.exit(1)
 
-    if not (args.print_urls or args.export_diarization or args.export_transcription or args.print_transcript) and not args.rss_file_or_url:
+    if not (args.print_urls or args.export_diarization or args.export_transcription or args.print_transcript or args.wav_transcribe) and not args.rss_file_or_url:
         print("Error: Please provide an RSS file or URL when not using the --print_urls, --export_diarization, --export_transcription, or --print_transcript options.")
         sys.exit(1)
 
