@@ -199,8 +199,6 @@ def write_transcripts(conn, episode_id, speaker_word_list, punctuator, episode_t
 
     transcript_text = f"Episode Title: {episode_title}\nDate: {episode_date}\n\n" + "\n\n".join(transcript_parts)
 
-    print(f'transcript_text: {transcript_text}')
-
     cursor = conn.cursor()
     cursor.execute("UPDATE transcripts SET transcript = ? WHERE id = ?", (transcript_text, episode_id))
     conn.commit()
@@ -242,7 +240,6 @@ def process_episode(item, downloads_dir, conn, recognizer, punctuator, num_speak
         episode_id, existing_transcript = episode_exists
         if existing_transcript and existing_transcript.strip() and not overwrite:
             print(f"Transcript for '{episode_title}' already exists in the database, skipping transcription")
-            return
         elif overwrite:
             print(f"Overwriting transcript for '{episode_title}'")
             cursor.execute("DELETE FROM transcription_results WHERE episode_id = ?", (episode_id,))
