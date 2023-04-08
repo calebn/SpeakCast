@@ -39,7 +39,7 @@ def perform_speaker_diarization(conn, episode_id, input_file, num_speakers=None,
 
     conn.commit()
 
-def transcribe_audio(conn, episode_id, input_file, recognizer):
+def transcribe_audio(conn, episode_id, input_file, recognizer, chunk_size=3600):
     """
     Transcribes the given audio file using Vosk and saves the transcription to the database.
 
@@ -48,6 +48,7 @@ def transcribe_audio(conn, episode_id, input_file, recognizer):
         episode_id (int): The ID of the episode in the database.
         input_file (str): The path to the input audio file.
         recognizer (vosk.KaldiRecognizer): The Vosk recognizer object.
+        chunk_size (int, optional): The size of the audio chunks to transcribe in seconds. Defaults to 3600.
 
     Returns:
         list: The list of transcribed words with their timings and speaker ID placeholders.
@@ -73,7 +74,7 @@ def transcribe_audio(conn, episode_id, input_file, recognizer):
 
         while frame_position < total_frames:
             # Read one minute of audio at a time
-            num_frames = min(FRAME_RATE * 60, total_frames - frame_position)
+            num_frames = min(FRAME_RATE * chunk_size, total_frames - frame_position)
             data = wf.readframes(num_frames)
             frame_position += num_frames
 
